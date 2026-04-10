@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>乾隆化工貿易 — 訂單輸入</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+TC:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hd">
+  <div class="hd-in">
+    <div class="hd-logo">
+      <span class="logo-cjk">乾隆化工貿易</span>
+      <span class="logo-en">QIAN LONG CHEMICAL TRADING</span>
+    </div>
+    <div class="hd-r">
+      <span class="badge" id="topBadge">草稿</span>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-num">No.</div>
+    <div class="hero-title">訂單輸入</div>
+    <div class="hero-sub">ORDER ENTRY · 2026_04_訂單表</div>
+    <div class="hero-id" id="pageOrderId">—</div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span class="lg r-lg">● 必填</span>
+    <span class="lg g-lg">● 自動帶入</span>
+    <span class="lg b-lg">◎ 自動計算</span>
+    <span class="lg o-lg">○ 選填</span>
+  </div>
+
+  <!-- ══ SECTION 01 訂單識別 ══ -->
+  <section class="card">
+    <div class="ch"><span class="cn">01</span><span class="ct">訂單識別</span><span class="ce">ORDER IDENTIFICATION</span></div>
+
+    <div class="r2">
+      <div class="fw">
+        <label class="fl" for="f_shipDate">出貨日期 <b class="tag-r">必填</b></label>
+        <input type="date" id="f_shipDate" class="fi"/>
+        <span class="fe" id="e_shipDate"></span>
+      </div>
+      <div class="fw">
+        <label class="fl" for="f_orderDate">訂單日期 <b class="tag-r">必填</b></label>
+        <input type="date" id="f_orderDate" class="fi"/>
+        <span class="fe" id="e_orderDate"></span>
+      </div>
+    </div>
+
+    <div class="r2">
+      <div class="fw">
+        <label class="fl" for="f_orderNo">訂單號碼 <b class="tag-r">必填</b></label>
+        <input type="text" id="f_orderNo" class="fi" placeholder="e.g. QL-2026-0001"/>
+        <span class="fe" id="e_orderNo"></span>
+      </div>
+      <div class="fw">
+        <label class="fl" for="f_orderStatus">訂單進度 <b class="tag-r">必填</b></label>
+        <select id="f_orderStatus" class="fi fi-sel" onchange="onStatusChange()">
+          <option value="">— 載入中… —</option>
+        </select>
+        <span class="fe" id="e_orderStatus"></span>
+      </div>
+    </div>
+
+    <div class="ss" id="statusStrip">
+      <span class="sdot" id="sDot"></span>
+      <span class="slbl" id="sLbl">請選擇訂單進度</span>
+    </div>
+  </section>
+
+  <!-- ══ SECTION 02 客戶資訊 ══ -->
+  <section class="card">
+    <div class="ch"><span class="cn">02</span><span class="ct">客戶資訊</span><span class="ce">CLIENT INFORMATION</span></div>
+
+    <div class="fw">
+      <label class="fl" for="f_clientName">客戶名稱 <b class="tag-r">必填</b></label>
+      <select id="f_clientName" class="fi fi-sel" onchange="onClientChange()">
+        <option value="">— 載入中… —</option>
+      </select>
+      <span class="fe" id="e_clientName"></span>
+    </div>
+
+    <div class="fw">
+      <label class="fl" for="f_deliveryAddr">配送地址 <b class="tag-g">自動帶入</b></label>
+      <input type="text" id="f_deliveryAddr" class="fi fi-ro" readonly placeholder="依客戶名稱自動填入"/>
+    </div>
+
+    <div class="fw">
+      <label class="fl" for="f_remark">備註 <b class="tag-o">選填</b></label>
+      <textarea id="f_remark" class="fi fi-ta" placeholder="輸入備註…"></textarea>
+    </div>
+  </section>
+
+  <!-- ══ SECTION 03 產品明細（可新增多筆） ══ -->
+  <section class="card">
+    <div class="ch">
+      <span class="cn">03</span>
+      <span class="ct">產品明細</span>
+      <span class="ce">PRODUCT DETAILS</span>
+      <button class="add-btn" onclick="addProductRow()" type="button">＋ 新增品項</button>
+    </div>
+
+    <div id="productList">
+      <!-- 第一筆（不可刪除）由 JS 渲染 -->
+    </div>
+  </section>
+
+  <!-- ══ SECTION 04 自動計算 ══ -->
+  <section class="card card-dark">
+    <div class="ch">
+      <span class="cn" style="color:var(--red)">04</span>
+      <span class="ct" style="color:var(--light)">自動計算</span>
+      <span class="ce" style="color:#666">COMPUTED TOTALS</span>
+    </div>
+
+    <div class="calc-grid">
+      <div class="cc">
+        <div class="cc-l">稅額合計 5%</div>
+        <div class="cc-f">= Σ（單價×數量×0.05）</div>
+        <div class="cc-v" id="c_tax">NT$ 0</div>
+      </div>
+      <div class="cc">
+        <div class="cc-l">含稅小計</div>
+        <div class="cc-f">= Σ（單項含稅）</div>
+        <div class="cc-v" id="c_itemTax">NT$ 0</div>
+      </div>
+      <div class="cc">
+        <div class="cc-l">銷貨總額（未稅）</div>
+        <div class="cc-f">= Σ（單價×數量）</div>
+        <div class="cc-v" id="c_preTax">NT$ 0</div>
+      </div>
+      <div class="cc cc-hl">
+        <div class="cc-l">銷貨總額（含稅）</div>
+        <div class="cc-f">= 未稅總額 × 1.05</div>
+        <div class="cc-v cc-big" id="c_total">NT$ 0</div>
+      </div>
+    </div>
+
+    <!-- 收入金額 -->
+    <div class="fw income-wrap">
+      <label class="fl income-lbl" for="f_incomeAmt">
+        收入金額
+        <b class="income-tag" id="incomeTag">須選「已收款入帳」才可填寫</b>
+      </label>
+      <input type="number" id="f_incomeAmt" class="fi fi-income" placeholder="NT$ 0" min="0" step="0.01" disabled/>
+    </div>
+  </section>
+
+  <!-- 提交按鈕 -->
+  <div class="sub-area">
+    <button class="btn-sub" id="btnSub" onclick="validateAndSubmit()">
+      提交訂單 &nbsp;→
+    </button>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="ov-in">
+    <div class="loader"></div>
+    <div class="ov-txt" id="overlayTxt">寫入試算表中…</div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
