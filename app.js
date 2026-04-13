@@ -126,19 +126,26 @@ async function loadCostCategories() {
    ================================================================ */
 var _orderInited = false;
 function initOrderPage() {
+  // 每次進入都重新初始化（刷新後 _orderInited 已重置）
   if (!_orderInited) {
     _orderInited = true;
+
     var today = new Date().toISOString().split('T')[0];
     var od = document.getElementById('f_orderDate');
-    if (od && !od.value) od.value = today;
+    if (od) od.value = today;
 
     var n = new Date(), pad = function(v){ return String(v).padStart(2,'0'); };
     var id = 'QL-' + n.getFullYear() + pad(n.getMonth()+1) + pad(n.getDate()) + '-' + pad(n.getMilliseconds());
     var oid = document.getElementById('pageOrderId');
     if (oid) oid.textContent = 'ORDER ID — ' + id;
 
+    // 清空品項列表，確保只有一筆預設
+    var list = document.getElementById('productList');
+    if (list) list.innerHTML = '';
+    rowCount = 0;
+    addProductRow(); // 預設第一筆
+
     bindBlur();
-    addProductRow();
   }
   // 每次進入都重新載入清單
   loadOrderDropdowns();
@@ -494,21 +501,14 @@ function submitToGAS(action, data, btnId) {
     fetch(GAS_URL + '?action=' + action + '&data=' + payload, { method:'GET', mode:'no-cors' });
   } catch(e) {}
 
-  // 等 GAS 寫完後回主畫面
+  // 等 GAS 寫完後刷新頁面（回到主畫面）
   setTimeout(function() {
     hideOverlay();
-    toast('✓ 已提交，返回主畫面', 'ok', 1500);
+    toast('✓ 已提交', 'ok', 800);
     setTimeout(function() {
-      // 重設表單狀態
-      if(btn) btn.disabled = false;
-      window._orderInited = false;
-      window._costInited  = false;
-      window._statsInit   = false;
-      rowCount = 0;
-      productOptions = [];
-      // 回主畫面
-      goHome();
-    }, 1500);
+      // 刷新頁面，自然回到主畫面
+      window.location.reload();
+    }, 800);
   }, 2500);
 }
 
