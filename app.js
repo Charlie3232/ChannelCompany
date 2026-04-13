@@ -124,44 +124,99 @@ async function loadCostCategories() {
 /* ================================================================
    INIT ORDER PAGE
    ================================================================ */
-var _orderInited = false;
 function initOrderPage() {
-  // 每次進入都重新初始化（刷新後 _orderInited 已重置）
-  if (!_orderInited) {
-    _orderInited = true;
+  // 每次進入都完整重設（清空 DOM + 重設狀態）
+  var today = new Date().toISOString().split('T')[0];
+  var od = document.getElementById('f_orderDate');
+  if (od) od.value = today;
 
-    var today = new Date().toISOString().split('T')[0];
-    var od = document.getElementById('f_orderDate');
-    if (od) od.value = today;
+  var shipDate = document.getElementById('f_shipDate');
+  if (shipDate) shipDate.value = '';
 
-    var n = new Date(), pad = function(v){ return String(v).padStart(2,'0'); };
-    var id = 'QL-' + n.getFullYear() + pad(n.getMonth()+1) + pad(n.getDate()) + '-' + pad(n.getMilliseconds());
-    var oid = document.getElementById('pageOrderId');
-    if (oid) oid.textContent = 'ORDER ID — ' + id;
+  var orderNo = document.getElementById('f_orderNo');
+  if (orderNo) orderNo.value = '';
 
-    // 清空品項列表，確保只有一筆預設
-    var list = document.getElementById('productList');
-    if (list) list.innerHTML = '';
-    rowCount = 0;
-    addProductRow(); // 預設第一筆
+  // 重設 selects
+  sel('f_orderStatus', '載入中…');
+  sel('f_clientName',  '載入中…');
 
-    bindBlur();
-  }
-  // 每次進入都重新載入清單
+  // 清空地址、備註
+  var addr = document.getElementById('f_deliveryAddr');
+  if (addr) addr.value = '';
+  var remark = document.getElementById('f_remark');
+  if (remark) remark.value = '';
+
+  // 清空計算結果
+  ['c_preTax','c_tax','c_total','c_itemTax'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.textContent = 'NT$ 0';
+  });
+
+  // 收入金額重設
+  var inc = document.getElementById('f_incomeAmt');
+  if (inc) { inc.value = ''; inc.disabled = true; }
+
+  // 清空品項列表，確保只有一筆預設
+  var list = document.getElementById('productList');
+  if (list) list.innerHTML = '';
+  rowCount = 0;
+  productOptions = [];
+  addProductRow();
+
+  // 重設 status strip
+  var strip = document.getElementById('statusStrip');
+  if (strip) strip.className = 'ss';
+  var dot = document.getElementById('sDot');
+  if (dot) dot.style.background = '';
+  var lbl = document.getElementById('sLbl');
+  if (lbl) { lbl.textContent = ''; lbl.style.color = ''; }
+
+  // 新 Order ID
+  var n = new Date(), pad = function(v){ return String(v).padStart(2,'0'); };
+  var id = 'QL-' + n.getFullYear() + pad(n.getMonth()+1) + pad(n.getDate()) + '-' + pad(n.getMilliseconds());
+  var oid = document.getElementById('pageOrderId');
+  if (oid) oid.textContent = 'ORDER ID — ' + id;
+
+  // 移除所有 invalid/valid class
+  document.querySelectorAll('.fi').forEach(function(el){
+    el.classList.remove('invalid','valid');
+  });
+  document.querySelectorAll('.fe').forEach(function(el){
+    el.textContent = '';
+  });
+
+  bindBlur();
   loadOrderDropdowns();
 }
 
 /* ================================================================
    INIT COST PAGE
    ================================================================ */
-var _costInited = false;
 function initCostPage() {
-  if (!_costInited) {
-    _costInited = true;
-    var cd = document.getElementById('c_date');
-    if (cd && !cd.value) cd.value = new Date().toISOString().split('T')[0];
-  }
-  // 每次進入都重新載入成本類別
+  // 每次進入都完整重設
+  var cd = document.getElementById('c_date');
+  if (cd) cd.value = new Date().toISOString().split('T')[0];
+
+  var amount = document.getElementById('c_amount');
+  if (amount) amount.value = '';
+
+  var note = document.getElementById('c_note');
+  if (note) note.value = '';
+
+  sel('c_category', '載入中…');
+
+  // 移除 invalid/valid
+  ['c_date','c_category','c_amount'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('invalid','valid');
+  });
+  ['ce_date','ce_category','ce_amount'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
+
+  var btn = document.getElementById('btnCost');
+  if (btn) btn.disabled = false;
+
   loadCostCategories();
 }
 
