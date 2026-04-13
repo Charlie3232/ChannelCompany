@@ -2,7 +2,7 @@
    乾隆化工貿易 · app.js
    ============================================================ */
 
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYpR2sWJY-gx6HwJim7TiHhwm4INckLrK0ANHpl4EZJvgGEHLo4kyv5Ro4i2QEcbabsQ/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzINy_ibBfdywXBFIn9hXExkVC2MPjGTy8vm1zxi9CHiFlAMe-GBBmC8WkLLtiDM3EQRQ/exec';
 
 var REQ_ORDER = [
   {id:'f_shipDate',    label:'出貨日期'},
@@ -317,12 +317,8 @@ function renderCharts(data) {
   var revenues = months.map(function(m){ return m.revenue||0; });
   var costs    = months.map(function(m){ return m.cost||0; });
   var profits  = months.map(function(m){ return m.profit||0; });
-  var margins  = months.map(function(m){
-    var v = m.margin||0;
-    if (typeof v === 'string') v = parseFloat(v.replace('%',''))||0;
-    if (Math.abs(v) <= 1 && v !== 0) v = v * 100;
-    return +v.toFixed(2);
-  });
+  // GAS 已處理成百分比數字，直接用，不做任何限制
+  var margins = months.map(function(m){ return +(m.margin||0); });
 
   function moneyFmt(v){ return 'NT$ ' + Math.round(v).toLocaleString('zh-TW'); }
 
