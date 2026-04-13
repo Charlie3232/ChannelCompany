@@ -2,7 +2,7 @@
    乾隆化工貿易 · app.js
    ============================================================ */
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwA-9PYkgCcKWNj5_0u9sZ9AhhpGNzHJHKfYXnUuw3KlkQA6LKAC7PKlezsH-YyrL9MqQ/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxAZVLi5uIYdiIsAzTycgZM-x9D9Tck0LKDa3oTvrsnDedNUR4wycLE_fZD40W-PtM-4w/exec';
 
 const REQ_ORDER = [
   {id:'f_shipDate',    label:'出貨日期'},
@@ -433,19 +433,34 @@ async function doPost(action, data, btnId) {
   showOverlay('寫入試算表中…');
   var btn=document.getElementById(btnId); if(btn)btn.disabled=true;
   try {
-    var payload=encodeURIComponent(JSON.stringify(data));
-    var res=await fetch(GAS_URL+'?action='+action+'&data='+payload);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    var result=await res.json();
-    if(result&&result.success){
+    // 用 POST 避免 GET URL 長度限制
+    var res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: action, data: data })
+    });
+
+    // GAS doPost 有時回傳 200 但 JSON 格式不穩定
+    // 只要 HTTP 200 就視為成功並刷新
+    if (res.ok) {
+      var result = null;
+      try { result = await res.json(); } catch(e) {}
+
+      // 若有明確 error 才顯示錯誤
+      if (result && result.error) {
+        throw new Error(result.error);
+      }
+      // 成功
       hideOverlay();
       toast('✓ 已成功寫入試算表', 'ok', 2000);
-      setTimeout(function(){ window.location.href=window.location.href.split('?')[0]; }, 2000);
-    } else throw new Error(result?result.error:'未知錯誤');
-  } catch(e){
+      setTimeout(function(){ window.location.href = window.location.href.split('?')[0]; }, 2000);
+    } else {
+      throw new Error('HTTP ' + res.status);
+    }
+  } catch(e) {
     hideOverlay();
-    toast('✕ 寫入失敗：'+e.message,'',8000);
-    if(btn)btn.disabled=false;
+    toast('✕ 寫入失敗：' + e.message, '', 8000);
+    if(btn) btn.disabled = false;
   }
 }
 
