@@ -304,7 +304,14 @@ function renderSummary(data) {
   setText('sum_revenue', fmt(totalRev));
   setText('sum_cost',    fmt(totalCost));
   setText('sum_profit',  fmt(totalProfit));
-  setText('sum_margin',  avgMargin.toFixed(1) + '%');
+  // 毛利率顏色：>20% 綠色，0~20% 藍色，負數紅色
+  var marginEl = document.getElementById('sum_margin');
+  if (marginEl) {
+    marginEl.textContent = avgMargin.toFixed(1) + '%';
+    if (avgMargin < 0)       marginEl.style.color = '#E2001A';
+    else if (avgMargin < 20) marginEl.style.color = '#1A3A70';
+    else                     marginEl.style.color = '#1A5C2A';
+  }
 }
 
 function renderCharts(data) {
