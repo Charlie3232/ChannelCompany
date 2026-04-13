@@ -36,8 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
     String(d.getMonth()+1).padStart(2,'0') + '/' +
     String(d.getDate()).padStart(2,'0');
 
-  // 預先載入所有清單（在主畫面背景執行，進入分頁時已完成）
-  preloadAllData();
+  // 主畫面狀態
+  var statusEl = document.getElementById('homeStatus');
+  if (statusEl) { statusEl.textContent = '就緒'; statusEl.style.color = '#555'; }
 });
 
 /* ================================================================
@@ -70,54 +71,53 @@ function switchPage(page) {
 }
 
 /* ================================================================
-   PRELOAD ALL DATA（主畫面背景預載，加速後續進入分頁）
-   一次 fetch 取得：進度、客戶、品項、成本類別
+   LOAD ORDER DROPDOWNS（進入訂單頁時呼叫）
    ================================================================ */
-var _cache = { loaded: false, statuses:[], clients:[], products:[], categories:[] };
-
-async function preloadAllData() {
-  var statusEl = document.getElementById('homeStatus');
-  if (statusEl) { statusEl.textContent = '連線中…'; statusEl.style.color = '#555'; }
-
-  // 10 秒 timeout
-  function fetchWithTimeout(url, ms) {
-    return Promise.race([
-      fetch(url),
-      new Promise(function(_, reject){
-        setTimeout(function(){ reject(new Error('連線逾時（10秒）')); }, ms);
-      })
-    ]);
-  }
-
+async function loadOrderDropdowns() {
+  sel('f_orderStatus', '載入中…');
+  sel('f_clientName',  '載入中…');
+  document.querySelectorAll('.prod-sel').forEach(function(s){ s.innerHTML='<option value="">載入中…</option>'; });
   try {
-    var res  = await fetchWithTimeout(GAS_URL + '?action=getDropdowns', 10000);
+    var res  = await fetch(GAS_URL + '?action=getDropdowns');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    _cache.statuses = data.statuses  || [];
-    _cache.clients  = data.clients   || [];
-    _cache.products = data.products  || [];
+    if (data.statuses && data.statuses.length) fillSel('f_orderStatus', data.statuses, '— 選擇訂單進度 —');
+    else sel('f_orderStatus', '⚠ 無資料');
 
-    // 同時取得成本類別
-    try {
-      var res2  = await fetchWithTimeout(GAS_URL + '?action=getCostCategories', 8000);
-      var data2 = await res2.json();
-      _cache.categories = data2.categories || [];
-    } catch(e2) {
-      console.warn('成本類別載入失敗:', e2.message);
-    }
+    if (data.clients && data.clients.length) fillSel('f_clientName', data.clients, '— 選擇客戶名稱 —');
+    else sel('f_clientName', '⚠ 無資料');
 
-    _cache.loaded = true;
+    productOptions = (data.products || []).filter(Boolean);
+    refreshProdSelects();
+
+    // 更新主畫面狀態
+    var statusEl = document.getElementById('homeStatus');
     if (statusEl) { statusEl.textContent = '✓ 系統就緒'; statusEl.style.color = '#2a7a2a'; }
 
   } catch(e) {
-    console.warn('預載失敗:', e.message);
-    _cache.loaded = true; // 標記已完成（即使失敗），讓使用者還是能進入分頁
-    if (statusEl) {
-      statusEl.textContent = '⚠ ' + e.message;
-      statusEl.style.color = '#8a2020';
-    }
+    console.warn('清單載入失敗:', e.message);
+    sel('f_orderStatus', '⚠ ' + e.message);
+    sel('f_clientName',  '⚠ 載入失敗');
+    document.querySelectorAll('.prod-sel').forEach(function(s){ s.innerHTML='<option value="">⚠ 載入失敗</option>'; });
+  }
+}
+
+/* ================================================================
+   LOAD COST CATEGORIES（進入成本頁時呼叫）
+   ================================================================ */
+async function loadCostCategories() {
+  sel('c_category', '載入中…');
+  try {
+    var res  = await fetch(GAS_URL + '?action=getCostCategories');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (data.categories && data.categories.length) fillSel('c_category', data.categories, '— 選擇項目類別 —');
+    else sel('c_category', '⚠ 無資料');
+  } catch(e) {
+    sel('c_category', '⚠ 載入失敗：' + e.message);
   }
 }
 
@@ -140,21 +140,8 @@ function initOrderPage() {
     bindBlur();
     addProductRow();
   }
-  // 每次進入都更新 select（可能 cache 剛好載完）
-  applyOrderSelects();
-}
-
-function applyOrderSelects() {
-  if (_cache.statuses.length) fillSel('f_orderStatus', _cache.statuses, '— 選擇訂單進度 —');
-  else if (!_cache.loaded)    sel('f_orderStatus', '載入中…');
-  else                        sel('f_orderStatus', '⚠ 無資料');
-
-  if (_cache.clients.length)  fillSel('f_clientName', _cache.clients, '— 選擇客戶名稱 —');
-  else if (!_cache.loaded)    sel('f_clientName', '載入中…');
-  else                        sel('f_clientName', '⚠ 無資料');
-
-  productOptions = _cache.products;
-  refreshProdSelects();
+  // 每次進入都重新載入清單
+  loadOrderDropdowns();
 }
 
 /* ================================================================
@@ -167,9 +154,8 @@ function initCostPage() {
     var cd = document.getElementById('c_date');
     if (cd && !cd.value) cd.value = new Date().toISOString().split('T')[0];
   }
-  if (_cache.categories.length) fillSel('c_category', _cache.categories, '— 選擇項目類別 —');
-  else if (!_cache.loaded)      sel('c_category', '載入中…');
-  else                          sel('c_category', '⚠ 無資料');
+  // 每次進入都重新載入成本類別
+  loadCostCategories();
 }
 
 /* ================================================================
