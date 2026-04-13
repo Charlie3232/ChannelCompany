@@ -2,9 +2,9 @@
    乾隆化工貿易 · app.js
    ============================================================ */
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyxMBptplXG-kk2P6ganMUOFMISjor4gXCKqvu19uvbKYF4Xxg3lhrONPZ3uX1G2dB0zQ/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbyxMBptplXG-kk2P6ganMUOFMISjor4gXCKqvu19uvbKYF4Xxg3lhrONPZ3uX1G2dB0zQ/exec';
 
-const REQ_ORDER = [
+var REQ_ORDER = [
   {id:'f_shipDate',    label:'出貨日期'},
   {id:'f_orderDate',   label:'訂單日期'},
   {id:'f_orderNo',     label:'訂單號碼'},
@@ -12,7 +12,7 @@ const REQ_ORDER = [
   {id:'f_clientName',  label:'客戶名稱'},
 ];
 
-const STATUS_CFG = {
+var STATUS_CFG = {
   '待確認':     {color:'#8A8A8A', cls:'',    badge:'待確認'},
   '已確認':     {color:'#1A4A28', cls:'s-c', badge:'已確認'},
   '備貨中':     {color:'#B08840', cls:'',    badge:'備貨中'},
@@ -22,8 +22,8 @@ const STATUS_CFG = {
   '取消':       {color:'#C8102E', cls:'s-x', badge:'已取消'},
 };
 
-let rowCount = 0;
-let productOptions = [];
+var rowCount = 0;
+var productOptions = [];
 
 /* ================================================================
    INIT
@@ -77,9 +77,20 @@ var _cache = { loaded: false, statuses:[], clients:[], products:[], categories:[
 
 async function preloadAllData() {
   var statusEl = document.getElementById('homeStatus');
+  if (statusEl) { statusEl.textContent = '連線中…'; statusEl.style.color = '#555'; }
+
+  // 10 秒 timeout
+  function fetchWithTimeout(url, ms) {
+    return Promise.race([
+      fetch(url),
+      new Promise(function(_, reject){
+        setTimeout(function(){ reject(new Error('連線逾時（10秒）')); }, ms);
+      })
+    ]);
+  }
+
   try {
-    // 一次 call 取得訂單清單
-    var res  = await fetch(GAS_URL + '?action=getDropdowns');
+    var res  = await fetchWithTimeout(GAS_URL + '?action=getDropdowns', 10000);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -89,16 +100,24 @@ async function preloadAllData() {
     _cache.products = data.products  || [];
 
     // 同時取得成本類別
-    var res2  = await fetch(GAS_URL + '?action=getCostCategories');
-    var data2 = await res2.json();
-    _cache.categories = (data2.categories) || [];
+    try {
+      var res2  = await fetchWithTimeout(GAS_URL + '?action=getCostCategories', 8000);
+      var data2 = await res2.json();
+      _cache.categories = data2.categories || [];
+    } catch(e2) {
+      console.warn('成本類別載入失敗:', e2.message);
+    }
 
     _cache.loaded = true;
     if (statusEl) { statusEl.textContent = '✓ 系統就緒'; statusEl.style.color = '#2a7a2a'; }
 
   } catch(e) {
     console.warn('預載失敗:', e.message);
-    if (statusEl) { statusEl.textContent = '⚠ 連線失敗'; statusEl.style.color = '#8a2020'; }
+    _cache.loaded = true; // 標記已完成（即使失敗），讓使用者還是能進入分頁
+    if (statusEl) {
+      statusEl.textContent = '⚠ ' + e.message;
+      statusEl.style.color = '#8a2020';
+    }
   }
 }
 
@@ -197,6 +216,18 @@ async function loadStats() {
   if (errDiv)  errDiv.style.display  = 'none';
   if (grid)    grid.style.display    = 'none';
   if (area)    area.style.display    = 'none';
+
+  // 動態載入 Chart.js（只在需要時才載，不阻擋主頁面）
+  if (typeof Chart === 'undefined') {
+    await new Promise(function(resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+      s.onload  = resolve;
+      s.onerror = function() { reject(new Error('Chart.js 載入失敗')); };
+      document.head.appendChild(s);
+    });
+  }
+
   try {
     var res  = await fetch(GAS_URL + '?action=getStats');
     if (!res.ok) throw new Error('HTTP ' + res.status);
