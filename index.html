@@ -3,37 +3,40 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>乾隆化工貿易 — 訂單輸入</title>
+  <title>乾隆化工貿易 — 營業管理系統</title>
   <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+TC:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="hd">
-  <div class="hd-in">
-    <div class="hd-logo">
+<!-- ── HEADER ── -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-logo">
       <span class="logo-cjk">乾隆化工貿易</span>
       <span class="logo-en">QIAN LONG CHEMICAL TRADING</span>
     </div>
-    <div class="hd-r">
-      <span class="badge" id="topBadge">草稿</span>
-    </div>
+    <span class="badge" id="topBadge">DRAFT</span>
   </div>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <button class="nav-tab active" id="tab-order"  onclick="switchPage('order')"><span class="nav-num">01</span>訂單管理</button>
+      <button class="nav-tab"        id="tab-cost"   onclick="switchPage('cost')"><span class="nav-num">02</span>成本管理</button>
+      <button class="nav-tab"        id="tab-stats"  onclick="switchPage('stats')"><span class="nav-num">03</span>統計總覽</button>
+    </div>
+  </nav>
 </header>
 
-<!-- MAIN -->
-<main class="wrap">
-
-  <!-- HERO -->
+<!-- ══════════════════════════════════════
+     PAGE 01 訂單管理
+══════════════════════════════════════ -->
+<main class="wrap" id="page-order">
   <div class="hero">
-    <div class="hero-num">No.</div>
-    <div class="hero-title">訂單輸入</div>
-    <div class="hero-sub">ORDER ENTRY · 2026_04_訂單表</div>
-    <div class="hero-id" id="pageOrderId">—</div>
+    <div class="hero-eye">ORDER MANAGEMENT / 訂單管理</div>
+    <div class="hero-title">乾隆化工貿易<span>_營業管理</span></div>
+    <div class="hero-sub">2026_04_訂單表 · BUSINESS MANAGEMENT</div>
+    <div class="hero-id" id="pageOrderId">ID — AUTO</div>
   </div>
-
-  <!-- LEGEND -->
   <div class="legend">
     <span class="lg r-lg">● 必填</span>
     <span class="lg g-lg">● 自動帶入</span>
@@ -41,142 +44,169 @@
     <span class="lg o-lg">○ 選填</span>
   </div>
 
-  <!-- ══ SECTION 01 訂單識別 ══ -->
+  <!-- 01 訂單識別 -->
   <section class="card">
-    <div class="ch"><span class="cn">01</span><span class="ct">訂單識別</span><span class="ce">ORDER IDENTIFICATION</span></div>
-
+    <div class="card-hd"><span class="c-num">01</span><span class="c-ttl">訂單識別</span><span class="c-en">ORDER IDENTIFICATION</span></div>
     <div class="r2">
-      <div class="fw">
-        <label class="fl" for="f_shipDate">出貨日期 <b class="tag-r">必填</b></label>
-        <input type="date" id="f_shipDate" class="fi"/>
-        <span class="fe" id="e_shipDate"></span>
-      </div>
-      <div class="fw">
-        <label class="fl" for="f_orderDate">訂單日期 <b class="tag-r">必填</b></label>
-        <input type="date" id="f_orderDate" class="fi"/>
-        <span class="fe" id="e_orderDate"></span>
-      </div>
+      <div class="fw"><label class="fl">出貨日期 <b class="tag-r">必填</b></label><input type="date" id="f_shipDate" class="fi"/><span class="fe" id="e_shipDate"></span></div>
+      <div class="fw"><label class="fl">訂單日期 <b class="tag-r">必填</b></label><input type="date" id="f_orderDate" class="fi"/><span class="fe" id="e_orderDate"></span></div>
     </div>
-
     <div class="r2">
-      <div class="fw">
-        <label class="fl" for="f_orderNo">訂單號碼 <b class="tag-r">必填</b></label>
-        <input type="text" id="f_orderNo" class="fi" placeholder="e.g. QL-2026-0001"/>
-        <span class="fe" id="e_orderNo"></span>
-      </div>
-      <div class="fw">
-        <label class="fl" for="f_orderStatus">訂單進度 <b class="tag-r">必填</b></label>
-        <select id="f_orderStatus" class="fi fi-sel" onchange="onStatusChange()">
-          <option value="">— 載入中… —</option>
-        </select>
-        <span class="fe" id="e_orderStatus"></span>
-      </div>
+      <div class="fw"><label class="fl">訂單號碼 <b class="tag-r">必填</b></label><input type="text" id="f_orderNo" class="fi" placeholder="e.g. QL-2026-0001"/><span class="fe" id="e_orderNo"></span></div>
+      <div class="fw"><label class="fl">訂單進度 <b class="tag-r">必填</b></label><select id="f_orderStatus" class="fi fi-sel" onchange="onStatusChange()"><option value="">連線中…</option></select><span class="fe" id="e_orderStatus"></span></div>
     </div>
-
-    <div class="ss" id="statusStrip">
-      <span class="sdot" id="sDot"></span>
-      <span class="slbl" id="sLbl">請選擇訂單進度</span>
-    </div>
+    <div class="ss" id="statusStrip"><span class="sdot" id="sDot"></span><span class="slbl" id="sLbl"></span></div>
   </section>
 
-  <!-- ══ SECTION 02 客戶資訊 ══ -->
+  <!-- 02 客戶資訊 -->
   <section class="card">
-    <div class="ch"><span class="cn">02</span><span class="ct">客戶資訊</span><span class="ce">CLIENT INFORMATION</span></div>
-
-    <div class="fw">
-      <label class="fl" for="f_clientName">客戶名稱 <b class="tag-r">必填</b></label>
-      <select id="f_clientName" class="fi fi-sel" onchange="onClientChange()">
-        <option value="">— 載入中… —</option>
-      </select>
-      <span class="fe" id="e_clientName"></span>
-    </div>
-
-    <div class="fw">
-      <label class="fl" for="f_deliveryAddr">配送地址 <b class="tag-g">自動帶入</b></label>
-      <input type="text" id="f_deliveryAddr" class="fi fi-ro" readonly placeholder="依客戶名稱自動填入"/>
-    </div>
-
-    <div class="fw">
-      <label class="fl" for="f_remark">備註 <b class="tag-o">選填</b></label>
-      <textarea id="f_remark" class="fi fi-ta" placeholder="輸入備註…"></textarea>
-    </div>
+    <div class="card-hd"><span class="c-num">02</span><span class="c-ttl">客戶資訊</span><span class="c-en">CLIENT INFORMATION</span></div>
+    <div class="fw"><label class="fl">客戶名稱 <b class="tag-r">必填</b></label><select id="f_clientName" class="fi fi-sel" onchange="onClientChange()"><option value="">連線中…</option></select><span class="fe" id="e_clientName"></span></div>
+    <div class="fw"><label class="fl">配送地址 <b class="tag-g">自動帶入</b></label><input type="text" id="f_deliveryAddr" class="fi fi-ro" readonly placeholder="依客戶自動填入"/></div>
+    <div class="fw"><label class="fl">備註 <b class="tag-o">選填</b></label><textarea id="f_remark" class="fi fi-ta" placeholder="輸入備註…"></textarea></div>
   </section>
 
-  <!-- ══ SECTION 03 產品明細（可新增多筆） ══ -->
+  <!-- 03 產品明細 -->
   <section class="card">
-    <div class="ch">
-      <span class="cn">03</span>
-      <span class="ct">產品明細</span>
-      <span class="ce">PRODUCT DETAILS</span>
-      <button class="add-btn" onclick="addProductRow()" type="button">＋ 新增品項</button>
-    </div>
-
-    <div id="productList">
-      <!-- 第一筆（不可刪除）由 JS 渲染 -->
-    </div>
+    <div class="card-hd"><span class="c-num">03</span><span class="c-ttl">產品明細</span><span class="c-en">PRODUCT DETAILS</span><button class="add-btn" onclick="addProductRow()" type="button">＋ 新增品項</button></div>
+    <div id="productList"></div>
   </section>
 
-  <!-- ══ SECTION 04 自動計算 ══ -->
+  <!-- 04 自動計算 -->
   <section class="card card-dark">
-    <div class="ch">
-      <span class="cn" style="color:var(--red)">04</span>
-      <span class="ct" style="color:var(--light)">自動計算</span>
-      <span class="ce" style="color:#666">COMPUTED TOTALS</span>
-    </div>
-
+    <div class="card-hd"><span class="c-num" style="color:var(--red)">04</span><span class="c-ttl" style="color:#fff">自動計算</span><span class="c-en">COMPUTED TOTALS</span></div>
     <div class="calc-grid">
-      <div class="cc">
-        <div class="cc-l">稅額合計 5%</div>
-        <div class="cc-f">= Σ（單價×數量×0.05）</div>
-        <div class="cc-v" id="c_tax">NT$ 0</div>
-      </div>
-      <div class="cc">
-        <div class="cc-l">含稅小計</div>
-        <div class="cc-f">= Σ（單項含稅）</div>
-        <div class="cc-v" id="c_itemTax">NT$ 0</div>
-      </div>
-      <div class="cc">
-        <div class="cc-l">銷貨總額（未稅）</div>
-        <div class="cc-f">= Σ（單價×數量）</div>
-        <div class="cc-v" id="c_preTax">NT$ 0</div>
-      </div>
-      <div class="cc cc-hl">
-        <div class="cc-l">銷貨總額（含稅）</div>
-        <div class="cc-f">= 未稅總額 × 1.05</div>
-        <div class="cc-v cc-big" id="c_total">NT$ 0</div>
-      </div>
+      <div class="cc"><div class="cc-l">銷貨總額（未稅）</div><div class="cc-f">= Σ 單價 × 數量</div><div class="cc-v" id="c_preTax">NT$ 0</div></div>
+      <div class="cc"><div class="cc-l">銷貨稅額 5%</div><div class="cc-f">= 未稅 × 0.05</div><div class="cc-v" id="c_tax">NT$ 0</div></div>
+      <div class="cc cc-hl"><div class="cc-l">銷貨總額（含稅）</div><div class="cc-f">= 未稅 × 1.05</div><div class="cc-v cc-big" id="c_total">NT$ 0</div></div>
+      <div class="cc"><div class="cc-l">單項含稅小計</div><div class="cc-f">= Σ 各筆含稅</div><div class="cc-v" id="c_itemTax">NT$ 0</div></div>
     </div>
-
-    <!-- 收入金額 -->
     <div class="fw income-wrap">
-      <label class="fl income-lbl" for="f_incomeAmt">
-        收入金額
-        <b class="income-tag" id="incomeTag">須選「已收款入帳」才可填寫</b>
-      </label>
+      <label class="fl income-lbl">收入金額 <b class="income-tag" id="incomeTag">須選「已收款入帳」才可填寫</b></label>
       <input type="number" id="f_incomeAmt" class="fi fi-income" placeholder="NT$ 0" min="0" step="0.01" disabled/>
     </div>
   </section>
 
-  <!-- 提交按鈕 -->
   <div class="sub-area">
-    <button class="btn-sub" id="btnSub" onclick="validateAndSubmit()">
-      提交訂單 &nbsp;→
-    </button>
+    <button class="btn-sub" id="btnSub" onclick="validateAndSubmitOrder()">提交訂單 →</button>
   </div>
-
 </main>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<!-- OVERLAY -->
-<div class="overlay" id="overlay">
-  <div class="ov-in">
-    <div class="loader"></div>
-    <div class="ov-txt" id="overlayTxt">寫入試算表中…</div>
+<!-- ══════════════════════════════════════
+     PAGE 02 成本管理
+══════════════════════════════════════ -->
+<main class="wrap" id="page-cost" style="display:none">
+  <div class="hero">
+    <div class="hero-eye">COST MANAGEMENT / 成本管理</div>
+    <div class="hero-title">成本<span>管控</span></div>
+    <div class="hero-sub">成本管控區 · 2026_04</div>
   </div>
+  <div class="legend">
+    <span class="lg r-lg">● 必填</span>
+    <span class="lg o-lg">○ 選填</span>
+  </div>
+
+  <section class="card">
+    <div class="card-hd"><span class="c-num">01</span><span class="c-ttl">成本記錄</span><span class="c-en">COST ENTRY</span></div>
+
+    <div class="r2">
+      <div class="fw">
+        <label class="fl">日期 <b class="tag-r">必填</b></label>
+        <input type="date" id="c_date" class="fi"/>
+        <span class="fe" id="ce_date"></span>
+      </div>
+      <div class="fw">
+        <label class="fl">項目類別 <b class="tag-r">必填</b></label>
+        <select id="c_category" class="fi fi-sel"><option value="">連線中…</option></select>
+        <span class="fe" id="ce_category"></span>
+      </div>
+    </div>
+
+    <div class="fw">
+      <label class="fl">金額（NT$）<b class="tag-r">必填</b></label>
+      <input type="number" id="c_amount" class="fi" placeholder="0" min="0" step="1"/>
+      <span class="fe" id="ce_amount"></span>
+    </div>
+
+    <div class="fw">
+      <label class="fl">備註 <b class="tag-o">選填</b></label>
+      <textarea id="c_note" class="fi fi-ta" placeholder="輸入備註…"></textarea>
+    </div>
+  </section>
+
+  <div class="sub-area">
+    <button class="btn-sub btn-cost" id="btnCost" onclick="validateAndSubmitCost()">提交成本 →</button>
+  </div>
+</main>
+
+<!-- ══════════════════════════════════════
+     PAGE 03 統計總覽
+══════════════════════════════════════ -->
+<main class="wrap" id="page-stats" style="display:none">
+  <div class="hero">
+    <div class="hero-eye">STATISTICS / 統計總覽</div>
+    <div class="hero-title">營業<span>統計</span></div>
+    <div class="hero-sub">細項統計區 · 2026 年度</div>
+  </div>
+
+  <div class="stats-loading" id="statsLoading">
+    <div class="stats-loader"></div>
+    <div class="stats-loading-txt">載入統計資料中…</div>
+  </div>
+
+  <!-- 年度摘要卡片 -->
+  <div class="summary-grid" id="summaryGrid" style="display:none">
+    <div class="summary-card">
+      <div class="summary-label">年度營收</div>
+      <div class="summary-value" id="sum_revenue">—</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">年度成本</div>
+      <div class="summary-value" id="sum_cost">—</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">年度利潤</div>
+      <div class="summary-value" id="sum_profit">—</div>
+    </div>
+    <div class="summary-card summary-highlight">
+      <div class="summary-label">平均毛利率</div>
+      <div class="summary-value" id="sum_margin">—</div>
+    </div>
+  </div>
+
+  <!-- 圖表區 -->
+  <div id="chartsArea" style="display:none">
+    <section class="card chart-card">
+      <div class="card-hd"><span class="c-num">01</span><span class="c-ttl">營收</span><span class="c-en">REVENUE</span></div>
+      <canvas id="chartRevenue" height="220"></canvas>
+    </section>
+    <section class="card chart-card">
+      <div class="card-hd"><span class="c-num">02</span><span class="c-ttl">成本</span><span class="c-en">COST</span></div>
+      <canvas id="chartCost" height="220"></canvas>
+    </section>
+    <section class="card chart-card">
+      <div class="card-hd"><span class="c-num">03</span><span class="c-ttl">利潤</span><span class="c-en">PROFIT</span></div>
+      <canvas id="chartProfit" height="220"></canvas>
+    </section>
+    <section class="card chart-card">
+      <div class="card-hd"><span class="c-num">04</span><span class="c-ttl">毛利率</span><span class="c-en">GROSS MARGIN</span></div>
+      <canvas id="chartMargin" height="220"></canvas>
+    </section>
+  </div>
+
+  <div class="stats-error" id="statsError" style="display:none">
+    <div class="stats-error-txt" id="statsErrorTxt">載入失敗</div>
+    <button class="btn-retry" onclick="loadStats()">重新載入</button>
+  </div>
+</main>
+
+<!-- TOAST & OVERLAY -->
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay">
+  <div class="ov-in"><div class="loader"></div><div class="ov-txt" id="overlayTxt">處理中…</div></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
