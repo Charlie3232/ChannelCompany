@@ -2,7 +2,7 @@
    乾隆化工貿易 · app.js
    ============================================================ */
 
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbyxMBptplXG-kk2P6ganMUOFMISjor4gXCKqvu19uvbKYF4Xxg3lhrONPZ3uX1G2dB0zQ/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbz_f1p5yaKXNXYoiwbDhfwkSvnydFtCVr-g2_XtgUk3HRBqGn-UXmrWdPSxJFfUk_Atdg/exec';
 
 var REQ_ORDER = [
   {id:'f_shipDate',    label:'出貨日期'},
